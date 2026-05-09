@@ -13,6 +13,7 @@ Smart contract development practice repo by Bhari Gowda | Blockchain Developer |
 | TodoList.sol | Structs, arrays, indexing |
 | MyToken.sol | ERC20 standard, allowances |
 | SimpleNFT.sol | NFT basics, ownership |
+| MultiSigWallet.sol | Multi-owner approval, access control, ERC20 |
 
 ## Stack
 - Solidity ^0.8.19
