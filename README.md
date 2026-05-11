@@ -24,4 +24,3 @@ Smart contract development practice repo by Bhari Gowda | Blockchain Developer |
 
 ## Currently Building
 - Decentralized Crowdfunding dApp (Foundry + Viem + React)
-- DefiLlama Brix adapter (PR #19160)
