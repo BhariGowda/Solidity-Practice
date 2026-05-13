@@ -73,6 +73,16 @@ contract EverestOrBust {
     //  OWNER & TOKENS
     // -------------------------------------------------------
     address public owner;
+
+    // Reentrancy guard
+    bool private _locked;
+    modifier noReentrancy() {
+        require(!_locked, "Reentrant call");
+        _locked = true;
+        _;
+        _locked = false;
+    }
+
     address public wbtc;
     address public usdt;
     address public usdc;
@@ -84,6 +94,8 @@ contract EverestOrBust {
     // -------------------------------------------------------
     uint256 public ethPrice;
     uint256 public wbtcPrice;
+    uint256 public lastPriceUpdate;
+    uint256 public constant PRICE_VALIDITY = 24 hours;
 
     // -------------------------------------------------------
     //  GOAL & TIMELINE
@@ -138,6 +150,7 @@ contract EverestOrBust {
     modifier isActive() {
         require(!cancelled, "Campaign cancelled");
         require(block.timestamp < deadline, "Campaign ended");
+        require(block.timestamp - lastPriceUpdate <= PRICE_VALIDITY, "Prices are stale, update before donating");
         _;
     }
 
@@ -163,6 +176,7 @@ contract EverestOrBust {
         ethPrice  = _ethPrice;
         wbtcPrice = _wbtcPrice;
         deadline  = block.timestamp + 6 days;
+        lastPriceUpdate = block.timestamp;
     }
 
     // -------------------------------------------------------
@@ -221,7 +235,7 @@ contract EverestOrBust {
         emit SummitConfirmed("Bitcoin flag planted on Mount Everest. 8849m. We made it. Freedom of Finance is now on the roof of the world.");
     }
 
-    function withdraw() external onlyOwner isEnded {
+    function withdraw() external onlyOwner isEnded noReentrancy {
         require(goalReached(), "Goal not reached");
         require(!withdrawn, "Already withdrawn");
         withdrawn = true;
@@ -245,7 +259,7 @@ contract EverestOrBust {
     //  REFUND
     // -------------------------------------------------------
 
-    function refund() external isEnded {
+    function refund() external isEnded noReentrancy {
         require(!goalReached() || cancelled, "Goal reached. Bhari is going to Everest!");
         _refundDonor(msg.sender);
         emit FullRefundIssued(msg.sender);
@@ -321,13 +335,14 @@ contract EverestOrBust {
     function updatePrices(uint256 _ethPrice, uint256 _wbtcPrice) external onlyOwner {
         ethPrice  = _ethPrice;
         wbtcPrice = _wbtcPrice;
+        lastPriceUpdate = block.timestamp;
     }
 
     // -------------------------------------------------------
     //  INTERNALS
     // -------------------------------------------------------
 
-    function _refundExcess() internal {
+    function _refundExcess() internal noReentrancy {
         uint256 raised = totalRaisedUSD();
         if (raised <= GOAL_USD) return;
         uint256 excessBps = ((raised - GOAL_USD) * 10000) / raised;
