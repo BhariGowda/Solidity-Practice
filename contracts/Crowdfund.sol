@@ -342,7 +342,7 @@ contract EverestOrBust {
     //  INTERNALS
     // -------------------------------------------------------
 
-    function _refundExcess() internal noReentrancy {
+    function _refundExcess() internal {
         uint256 raised = totalRaisedUSD();
         if (raised <= GOAL_USD) return;
         uint256 excessBps = ((raised - GOAL_USD) * 10000) / raised;
