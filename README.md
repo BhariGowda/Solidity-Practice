@@ -24,3 +24,10 @@ Smart contract development practice repo by Bhari Gowda | Blockchain Developer |
 
 ## Currently Building
 - Decentralized Crowdfunding dApp (Foundry + Viem + React)
+## 🏔️ Currently Building
+
+Raising $69,000 on-chain to summit Mount Everest 2027.
+No bank. No Kickstarter. Pure DeFi.
+ETH + WBTC + USDT + USDC | Auto-refund if I don't summit.
+[EverestOrBust Contract →](https://github.com/BhariGowda/Solidity-Practice/blob/main/contracts/Crowdfund.sol)
+
