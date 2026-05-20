@@ -1,33 +1,66 @@
-# Solidity Practice 💎
+## Foundry
 
-Smart contract development practice repo by Bhari Gowda | Blockchain Developer | Web3 | Foundry | Viem
+**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
-## Contracts
+Foundry consists of:
 
-| Contract | Concepts Learned |
-|---|---|
-| Counter.sol | State variables, functions |
-| SimpleStorage.sol | Private data, events |
-| Wallet.sol | payable, modifiers, ETH handling |
-| Voting.sol | Mappings, arrays, structs |
-| TodoList.sol | Structs, arrays, indexing |
-| MyToken.sol | ERC20 standard, allowances |
-| SimpleNFT.sol | NFT basics, ownership |
-| MultiSigWallet.sol | Multi-owner approval, access control, ERC20 |
-| Staking.sol | Fixed APY rewards, ETH + ERC20 staking, time-based math |
-| Crowdfund.sol | Real crowdfund — Everest summit 2027, ETH+WBTC+USDT+USDC, excess refund, full story on-chain |
+- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
+- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
+- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
+- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
 
-## Stack
-- Solidity ^0.8.19
-- Foundry
-- Ubuntu Linux
+## Documentation
 
-- Decentralized Crowdfunding dApp (Foundry + Viem + React)
-## 🏔️ Currently Building
+https://book.getfoundry.sh/
 
-Raising $69,000 on-chain to summit Mount Everest 2027.
-No bank. No Kickstarter. Pure DeFi.
-ETH + WBTC + USDT + USDC | Auto-refund if I don't summit.
-[EverestOrBust Contract →](https://github.com/BhariGowda/Solidity-Practice/blob/main/contracts/Crowdfund.sol)
+## Usage
 
+### Build
 
+```shell
+$ forge build
+```
+
+### Test
+
+```shell
+$ forge test
+```
+
+### Format
+
+```shell
+$ forge fmt
+```
+
+### Gas Snapshots
+
+```shell
+$ forge snapshot
+```
+
+### Anvil
+
+```shell
+$ anvil
+```
+
+### Deploy
+
+```shell
+$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```
+
+### Cast
+
+```shell
+$ cast <subcommand>
+```
+
+### Help
+
+```shell
+$ forge --help
+$ anvil --help
+$ cast --help
+```
