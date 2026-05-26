@@ -237,6 +237,7 @@ contract EverestOrBust {
 
     function withdraw() external onlyOwner isEnded noReentrancy {
         require(goalReached(), "Goal not reached");
+        require(summitAchieved, "Summit not confirmed - refunds available");
         require(!withdrawn, "Already withdrawn");
         withdrawn = true;
 
@@ -248,9 +249,9 @@ contract EverestOrBust {
         uint256 usdcAmt = _bal(usdc);
 
         if (ethAmt  > 0) { (bool ok,) = owner.call{value: ethAmt}(""); require(ok, "ETH failed"); }
-        if (wbtcAmt > 0) IERC20(wbtc).transfer(owner, wbtcAmt);
-        if (usdtAmt > 0) IERC20(usdt).transfer(owner, usdtAmt);
-        if (usdcAmt > 0) IERC20(usdc).transfer(owner, usdcAmt);
+        if (wbtcAmt > 0) { bool ok = IERC20(wbtc).transfer(owner, wbtcAmt); require(ok, "WBTC withdraw failed"); }
+        if (usdtAmt > 0) { bool ok = IERC20(usdt).transfer(owner, usdtAmt); require(ok, "USDT withdraw failed"); }
+        if (usdcAmt > 0) { bool ok = IERC20(usdc).transfer(owner, usdcAmt); require(ok, "USDC withdraw failed"); }
 
         emit FundsWithdrawn(ethAmt, wbtcAmt, usdtAmt, usdcAmt);
     }
@@ -342,6 +343,12 @@ contract EverestOrBust {
     //  INTERNALS
     // -------------------------------------------------------
 
+    // Per-donor excess claim mappings (pull pattern - fixes C-1 griefing DoS)
+    mapping(address => uint256) public excessETH;
+    mapping(address => uint256) public excessWBTC;
+    mapping(address => uint256) public excessUSDT;
+    mapping(address => uint256) public excessUSDC;
+
     function _refundExcess() internal {
         uint256 raised = totalRaisedUSD();
         if (raised <= GOAL_USD) return;
@@ -359,14 +366,34 @@ contract EverestOrBust {
             d.eth  -= eR; d.wbtc -= wR;
             d.usdt -= uR; d.usdc -= cR;
 
-            if (eR > 0) { (bool ok,) = donor.call{value: eR}(""); require(ok, "ETH excess failed"); }
-            if (wR > 0) IERC20(wbtc).transfer(donor, wR);
-            if (uR > 0) IERC20(usdt).transfer(donor, uR);
-            if (cR > 0) IERC20(usdc).transfer(donor, cR);
+            // Store excess for pull-based claiming instead of pushing
+            if (eR > 0) excessETH[donor]  += eR;
+            if (wR > 0) excessWBTC[donor] += wR;
+            if (uR > 0) excessUSDT[donor] += uR;
+            if (cR > 0) excessUSDC[donor] += cR;
 
             uint256 usdBack = (eR * ethPrice / 1e18) + (wR * wbtcPrice / 1e8) + ((uR + cR) * 1e12);
             emit ExcessRefunded(donor, usdBack);
         }
+    }
+
+    function claimExcess() external noReentrancy {
+        uint256 e = excessETH[msg.sender];
+        uint256 w = excessWBTC[msg.sender];
+        uint256 u = excessUSDT[msg.sender];
+        uint256 c = excessUSDC[msg.sender];
+
+        require(e > 0 || w > 0 || u > 0 || c > 0, "No excess to claim");
+
+        excessETH[msg.sender]  = 0;
+        excessWBTC[msg.sender] = 0;
+        excessUSDT[msg.sender] = 0;
+        excessUSDC[msg.sender] = 0;
+
+        if (e > 0) { (bool ok,) = msg.sender.call{value: e}(""); require(ok, "ETH claim failed"); }
+        if (w > 0) { bool ok = IERC20(wbtc).transfer(msg.sender, w); require(ok, "WBTC claim failed"); }
+        if (u > 0) { bool ok = IERC20(usdt).transfer(msg.sender, u); require(ok, "USDT claim failed"); }
+        if (c > 0) { bool ok = IERC20(usdc).transfer(msg.sender, c); require(ok, "USDC claim failed"); }
     }
 
     function _refundDonor(address donor) internal {
@@ -376,11 +403,12 @@ contract EverestOrBust {
         uint256 e = d.eth;  uint256 w = d.wbtc;
         uint256 u = d.usdt; uint256 c = d.usdc;
         d.eth = 0; d.wbtc = 0; d.usdt = 0; d.usdc = 0;
+        totalETH -= e; totalWBTC -= w; totalUSDT -= u; totalUSDC -= c;
 
         if (e > 0) { (bool ok,) = donor.call{value: e}(""); require(ok, "ETH refund failed"); }
-        if (w > 0) IERC20(wbtc).transfer(donor, w);
-        if (u > 0) IERC20(usdt).transfer(donor, u);
-        if (c > 0) IERC20(usdc).transfer(donor, c);
+        if (w > 0) { bool ok = IERC20(wbtc).transfer(donor, w); require(ok, "WBTC refund failed"); }
+        if (u > 0) { bool ok = IERC20(usdt).transfer(donor, u); require(ok, "USDT refund failed"); }
+        if (c > 0) { bool ok = IERC20(usdc).transfer(donor, c); require(ok, "USDC refund failed"); }
     }
 
     function _pull(address token, uint256 amount) internal {
