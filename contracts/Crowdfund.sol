@@ -60,6 +60,11 @@ interface IERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
 }
 
+/// @title EverestOrBust — On-chain crowdfund for Everest summit 2027
+/// @author BhariGowda
+/// @notice Raises $69,000 in ETH/WBTC/USDT/USDC to summit Mount Everest.
+///         Full refund if goal not reached or summit not confirmed.
+/// @dev Uses pull pattern for excess refunds to prevent griefing DoS.
 contract EverestOrBust {
 
     // -------------------------------------------------------
