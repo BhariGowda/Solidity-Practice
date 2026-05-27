@@ -183,6 +183,8 @@ contract EverestOrBust {
     //  DONATE
     // -------------------------------------------------------
 
+    /// @notice Donate ETH to the Everest summit fund
+    /// @dev Emits Donated event. Emits GoalReached if goal is met.
     function donateETH() external payable isActive {
         require(msg.value > 0, "Send ETH to support the climb");
         totalETH += msg.value;
@@ -230,11 +232,15 @@ contract EverestOrBust {
     //  SUMMIT & WITHDRAW
     // -------------------------------------------------------
 
+    /// @notice Owner confirms summit was achieved — unlocks withdrawal
+    /// @dev Must be called before withdraw() succeeds
     function confirmSummit() external onlyOwner {
         summitAchieved = true;
         emit SummitConfirmed("Bitcoin flag planted on Mount Everest. 8849m. We made it. Freedom of Finance is now on the roof of the world.");
     }
 
+    /// @notice Withdraw funds after goal reached and summit confirmed
+    /// @dev Automatically calculates and stores excess refunds for donors
     function withdraw() external onlyOwner isEnded noReentrancy {
         require(goalReached(), "Goal not reached");
         require(summitAchieved, "Summit not confirmed - refunds available");
@@ -260,6 +266,7 @@ contract EverestOrBust {
     //  REFUND
     // -------------------------------------------------------
 
+    /// @notice Claim full refund if goal not reached or campaign cancelled
     function refund() external isEnded noReentrancy {
         require(!goalReached() || cancelled, "Goal reached. Bhari is going to Everest!");
         _refundDonor(msg.sender);
@@ -377,6 +384,8 @@ contract EverestOrBust {
         }
     }
 
+    /// @notice Claim your excess donation after goal was exceeded
+    /// @dev Pull pattern — safe against griefing attacks
     function claimExcess() external noReentrancy {
         uint256 e = excessETH[msg.sender];
         uint256 w = excessWBTC[msg.sender];
