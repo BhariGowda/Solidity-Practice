@@ -15,7 +15,7 @@ Smart contract development practice repo by Bhari Gowda | Blockchain Developer |
 | SimpleNFT.sol | NFT basics, ownership |
 | MultiSigWallet.sol | Multi-owner approval, access control, ERC20 |
 | Staking.sol | Fixed APY rewards, ETH + ERC20 staking, time-based math |
-| Crowdfund.sol | Real crowdfund — Everest summit 2027, ETH+WBTC+USDT+USDC, excess refund, full story on-chain |
+| Crowdfund.sol | Real crowdfund — Everest summit 2027, ETH+WBTC+USDT+USDC, pull refunds, audited |
 
 ## 🏔️ Currently Building
 
@@ -24,14 +24,20 @@ No bank. No Kickstarter. Pure DeFi.
 ETH + WBTC + USDT + USDC | Auto-refund if I don't summit.
 [EverestOrBust Contract →](https://github.com/BhariGowda/Solidity-Practice/blob/main/contracts/Crowdfund.sol)
 
+## Security
+
+EverestOrBust was manually audited. 7 findings identified and 5 fixed.
+[View Audit Report →](https://github.com/BhariGowda/Solidity-Practice/blob/main/audits/AUDIT.md)
+
+## Tests
+
+26 tests passing including 3 fuzz tests (768 automated runs).
+
+```shell
+forge test -v
+```
+
 ## Stack
 - Solidity ^0.8.19
 - Foundry
 - Ubuntu Linux
-
-## Commands
-```shell
-forge build    # compile
-forge test     # run tests
-forge test -v  # verbose
-```
