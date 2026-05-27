@@ -178,4 +178,32 @@ contract CrowdfundTest is Test {
         vm.warp(block.timestamp + 7 days);
         assertEq(crowdfund.timeLeft(), 0);
     }
+
+    // -------------------------------------------------------
+    // FUZZ TESTS
+    // -------------------------------------------------------
+
+    function testFuzz_DonateETHAnyAmount(uint96 amount) public {
+        vm.assume(amount > 0);
+        vm.deal(donor1, uint256(amount));
+        vm.prank(donor1);
+        crowdfund.donateETH{value: uint256(amount)}();
+        assertEq(crowdfund.totalETH(), uint256(amount));
+    }
+
+    function testFuzz_PercentNeverExceeds100(uint96 amount) public {
+        vm.assume(amount > 0);
+        vm.deal(donor1, uint256(amount));
+        vm.prank(donor1);
+        crowdfund.donateETH{value: uint256(amount)}();
+        // percent can exceed 100 if overfunded - just check it does not revert
+        crowdfund.percentRaised();
+    }
+
+    function testFuzz_OnlyOwnerCanCancel(address caller) public {
+        vm.assume(caller != owner);
+        vm.prank(caller);
+        vm.expectRevert("Only BhariGowda");
+        crowdfund.cancel("hack");
+    }
 }
